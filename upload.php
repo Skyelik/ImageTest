@@ -4,7 +4,19 @@ $host = 'localhost';
 $db = 'image_app'; // Название вашей базы данных
 $user = 'root'; // Имя пользователя MySQL
 $password = ''; // Пароль пользователя MySQL
-$pdo = new PDO("mysql:host=$host;dbname=$db", $user, $password);
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Ошибка подключения к базе данных: " . $e->getMessage());
+}
+
+// Проверяем наличие уникального идентификатора пользователя
+if (!isset($_COOKIE['userId'])) {
+    die("Ошибка: не удалось получить идентификатор пользователя.");
+}
+$userId = $_COOKIE['userId'];
 
 // Проверяем, что запрос пришел методом POST и все поля заполнены
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -13,18 +25,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $borderColor = $_POST['borderColor'];
     $description = $_POST['description'];
 
-    // Уникальный идентификатор пользователя из cookies
-    $userId = $_COOKIE['userId'];
-
     // Проверка полей
     if (empty($storageType) || empty($_FILES['fileInput']) || empty($borderColor) || empty($description)) {
-        echo 'All fields are required!';
+        echo 'Все поля обязательны для заполнения!';
         exit;
     }
 
     // Валидация описания
     if (strlen($description) > 100) {
-        echo 'Description must not exceed 100 characters!';
+        echo 'Описание не должно превышать 100 символов!';
         exit;
     }
 
@@ -34,12 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fileType = mime_content_type($file['tmp_name']);
 
     if ($fileSize > 1048576) {
-        echo 'File size must not exceed 1MB!';
+        echo 'Размер файла не должен превышать 1MB!';
         exit;
     }
 
-    if ($fileType !== 'image/jpeg' && $fileType !== 'image/png') {
-        echo 'Only JPG and PNG formats are allowed!';
+    if (!in_array($fileType, ['image/jpeg', 'image/png'])) {
+        echo 'Разрешены только форматы JPG и PNG!';
         exit;
     }
 
@@ -54,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (move_uploaded_file($file['tmp_name'], $targetFile)) {
             $imagePath = $targetFile; // Сохраняем путь к изображению для базы данных
         } else {
-            echo 'Error uploading file!';
+            echo 'Ошибка при загрузке файла!';
             exit;
         }
     } elseif ($storageType === 'imgur') {
@@ -77,18 +86,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($imgurResponse['success']) {
             $imagePath = $imgurResponse['data']['link']; // Сохраняем ссылку на изображение
         } else {
-            echo 'Error uploading to Imgur!';
+            echo 'Ошибка при загрузке на Imgur!';
             exit;
         }
     }
 
-    // Сохраняем данные в базу данных
-    $stmt = $pdo->prepare("INSERT INTO images (user_id, image_path, border_color, description) VALUES (?, ?, ?, ?)");
+    // Сохраняем данные в базу данных, включая дату загрузки
+    $stmt = $pdo->prepare("INSERT INTO images (user_id, image_path, border_color, description, upload_date) VALUES (?, ?, ?, ?, NOW())");
     if ($stmt->execute([$userId, $imagePath, $borderColor, $description])) {
-        echo 'Image uploaded successfully!';
+        echo 'Изображение успешно загружено!';
     } else {
-        echo 'Error saving to database!';
+        echo 'Ошибка при сохранении в базе данных!';
     }
+
 } else {
-    echo 'Invalid request!';
+    echo 'Неверный запрос!';
 }
+?>

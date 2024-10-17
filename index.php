@@ -20,6 +20,18 @@ if (!isset($_COOKIE['userId'])) {
 <body>
     <div class="container">
         <h1 class="mt-5">Загрузка изображений</h1>
+
+        <!-- Фильтр сортировки изображений -->
+        <div class="mb-3">
+            <label for="sortOrder" class="form-label">Сортировать по:</label>
+            <select id="sortOrder" name="sortOrder" class="form-select">
+                <option value="upload_date DESC">Дата загрузки (новые)</option>
+                <option value="upload_date ASC">Дата загрузки (старые)</option>
+                <option value="description ASC">Описание (А-Я)</option>
+                <option value="description DESC">Описание (Я-А)</option>
+            </select>
+        </div>
+
         <form id="uploadForm">
             <div class="mb-3">
                 <label for="storageType" class="form-label">Метод хранения:</label>
@@ -68,19 +80,25 @@ if (!isset($_COOKIE['userId'])) {
             });
         });
 
-        function loadImages() {
+        function loadImages(sortOrder = 'upload_date DESC') {
             $.ajax({
-                url: 'load_images.php', // Мы создадим этот файл
-                method: 'GET',
-                success: function(data) {
-                    $('#imageGallery').html(data);
-                }
+            url: 'load_images.php',
+            method: 'GET',
+            data: { sort: sortOrder },
+            success: function(data) {
+                $('#imageGallery').html(data);
+            }
             });
         }
 
-        // Загрузка изображений при загрузке страницы
+        // Загрузка изображений при загрузке страницы и при изменении фильтра сортировки
         $(document).ready(function() {
             loadImages();
+
+            // Обновляем изображения при изменении сортировки
+            $('#sortOrder').on('change', function() {
+                loadImages($(this).val());
+            });
         });
     </script>
 </body>
