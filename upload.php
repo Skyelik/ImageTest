@@ -1,16 +1,12 @@
 <?php
-// Подключение к базе данных (MySQL)
-$host = 'localhost';
-$db = 'image_app'; // Название вашей базы данных
-$user = 'root'; // Имя пользователя MySQL
-$password = ''; // Пароль пользователя MySQL
+include 'config.php';
+require_once 'Database.php';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Ошибка подключения к базе данных: " . $e->getMessage());
-}
+// Создаем объект класса Database
+$db = new Database($dbConfig['host'], $dbConfig['db'], $dbConfig['user'], $dbConfig['password']);
+
+// Получаем PDO объект
+$pdo = $db->getPDO();
 
 // Проверяем наличие уникального идентификатора пользователя
 if (!isset($_COOKIE['userId'])) {
@@ -68,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($storageType === 'imgur') {
         // Загрузка на Imgur через API
-        $clientId = 'fb159690f9cf4f5'; // Замените на свой Client ID
+        $clientId = '2b283aa908c3ee0'; // Замените на свой Client ID
         $imageData = base64_encode(file_get_contents($file['tmp_name']));
 
         // Настройка запроса к Imgur API

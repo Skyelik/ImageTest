@@ -4,7 +4,7 @@ if (!isset($_COOKIE['userId'])) {
     // Генерация уникального идентификатора
     $userId = uniqid('', true);
     // Установка cookie на 1 год
-    setcookie('userId', $userId, time() + (365 * 24 * 60 * 60), "/"); // / означает, что cookie доступно для всего домена
+    setcookie('userId', $userId, time() + (365 * 24 * 60 * 60), "/"); // "/" означает, что cookie доступно для всего домена
 }
 ?>
 
@@ -15,6 +15,7 @@ if (!isset($_COOKIE['userId'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Upload App</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
@@ -58,48 +59,6 @@ if (!isset($_COOKIE['userId'])) {
         <div id="imageGallery" class="mt-5"></div>
     </div>
 
-    <script>
-        $('#uploadForm').on('submit', function(e) {
-            e.preventDefault(); // Останавливаем стандартное поведение формы
-
-            // Отправляем данные на сервер
-            $.ajax({
-                type: 'POST',
-                url: 'upload.php',
-                data: new FormData(this),
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    $('#message').html(response);
-                    // Обновляем галерею изображений после успешной загрузки
-                    loadImages();
-                },
-                error: function() {
-                    $('#message').html('Ошибка при загрузке изображения.');
-                }
-            });
-        });
-
-        function loadImages(sortOrder = 'upload_date DESC') {
-            $.ajax({
-            url: 'load_images.php',
-            method: 'GET',
-            data: { sort: sortOrder },
-            success: function(data) {
-                $('#imageGallery').html(data);
-            }
-            });
-        }
-
-        // Загрузка изображений при загрузке страницы и при изменении фильтра сортировки
-        $(document).ready(function() {
-            loadImages();
-
-            // Обновляем изображения при изменении сортировки
-            $('#sortOrder').on('change', function() {
-                loadImages($(this).val());
-            });
-        });
-    </script>
+    <script src="main.js"></script>
 </body>
 </html>

@@ -1,16 +1,12 @@
 <?php
-// Подключение к базе данных
-$host = 'localhost';
-$db = 'image_app'; // Название вашей базы данных
-$user = 'root'; // Имя пользователя MySQL
-$password = ''; // Пароль пользователя MySQL
+include 'config.php';
+require_once 'Database.php';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Ошибка подключения к базе данных: " . $e->getMessage());
-}
+// Создаем объект класса Database
+$db = new Database($dbConfig['host'], $dbConfig['db'], $dbConfig['user'], $dbConfig['password']);
+
+// Получаем PDO объект
+$pdo = $db->getPDO();
 
 // Проверяем наличие уникального идентификатора пользователя
 if (!isset($_COOKIE['userId'])) {

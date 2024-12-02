@@ -1,0 +1,9 @@
+<div class="image-gallery">
+    {% for image in images %}
+        <div class="image-item" style="border-color: {{ image.border_color }}">
+            <img src="{{ image.image_path }}" alt="{{ image.description }}">
+            <p>{{ image.description }}</p>
+            <span>{{ image.upload_date|date('Y-m-d H:i') }}</span>
+        </div>
+    {% endfor %}
+</div>
